@@ -1,0 +1,102 @@
+% process results
+
+% clear all
+
+% load('data_adel_1.mat');
+
+num_of_operators = conf.deployment.numOfNetworkOperators;
+
+lastElemIdx = length(resultsLogQueue);
+if isempty(resultsLogQueue(lastElemIdx).finishingTime)
+    lastElemIdx = lastElemIdx - 1;
+end
+
+timeLineVector = zeros(1,2*lastElemIdx);
+throughputOverTime = zeros(num_of_operators,2*lastElemIdx);
+inc_SINR_vector = [];
+inc_SNR_vector = [];
+prob_detection = [];
+num_active_BS = [];
+prob_false_alarm = [];
+all_BS = false(1,57);
+
+probVector = struct( 'P_d' , cell(1,57),'P_fa' , cell(1,57),'P_d_mean' , cell(1,57),'P_fa_mean',cell(1,57));
+
+for nn = 1:lastElemIdx
+   
+    timeLineVector(nn*2-1) = resultsLogQueue(nn).startingTime;
+    timeLineVector(nn*2) = resultsLogQueue(nn).finishingTime;
+    resObject = resultsLogQueue(nn).resObj;
+    tmp = sum(resObject.out);
+    throughputOverTime(:,nn*2-1) = tmp.';
+    throughputOverTime(:,nn*2) = tmp.';
+    if resObject.SNR_vec ~= 0;
+        inc_SINR_vector     = [ inc_SINR_vector 10*log10(resObject.SINR_vec) ];
+        inc_SNR_vector      = [ inc_SNR_vector 10*log10(resObject.SNR_vec) ];
+    end
+    if any(resObject.detection.activeBSs_idx) ~= 0 
+        detected_BS = all_BS; 
+        detected_BS(resObject.detection.detectedBSs_idx(resObject.detection.detectedBSs_idx<=57) ) = true;
+        active_BS   = all_BS; 
+        active_BS(resObject.detection.activeBSs_idx) = true;
+        
+        D_set = detected_BS & active_BS;
+        P_d_snap = sum(D_set) / sum(active_BS);
+        
+        F_set = detected_BS & ~(D_set);
+        P_fa_snap = sum(F_set) / sum(detected_BS); 
+        prob_detection = [ prob_detection P_d_snap];
+        num_active_BS = [ num_active_BS sum(active_BS) ];
+        prob_false_alarm = [ prob_false_alarm P_fa_snap];
+        
+        if length(setdiff(resObject.detection.detectedBSs_idx,resObject.detection.activeBSs_idx)) > 10
+           disp('248stop' )
+        end
+    end
+
+        
+end
+
+% for bb = 1:length(num_active_BS)
+%     
+%     probVector(num_active_BS(bb)).P_d = [ probVector(num_active_BS(bb)).P_d  prob_detection(bb ) ];
+%     probVector(num_active_BS(bb)).P_fa = [ probVector(num_active_BS(bb)).P_fa  prob_false_alarm(bb ) ];  
+%     
+% end
+% 
+% for bb = 1:57
+%     
+%     if ~isempty(probVector(num_active_BS(bb)).P_d)
+%         probVector(bb).P_d_mean = mean(probVector(bb).P_d);  
+%         probVector(bb).P_fa_mean = mean(probVector(bb).P_fa);  
+%     end
+%     
+% end
+
+figure(1)
+% <<<<<<< working copy
+plot(timeLineVector/6,throughputOverTime(1,:)/1e9);hold on;
+plot(timeLineVector/6,throughputOverTime(2,:)/1e9,'r');
+axis([0 max(timeLineVector/6) 0 2.5]);
+xlabel('Time [hours]');
+ylabel('Throughput per Network Operator [Gbps]');
+% 
+% =======
+plot(timeLineVector,throughputOverTime(1,:)/1e9);hold on;
+plot(timeLineVector,throughputOverTime(2,:)/1e9,'r');
+% axis([0 max(timeLineVector) 0 2.5]);
+% >>>>>>> destination
+% 
+figure(2)
+drawCDF( inc_SINR_vector , 2 , [0 0 1]  ); %hold on;
+drawCDF( inc_SNR_vector , 2 , [1 0 0]  ); 
+
+
+% figure(2)
+% subplot(1,2,1)
+% plot(timeLineVector,throughputOverTime(1,:)/1e9);
+% axis([0 max(timeLineVector) 0 2.5]);
+% subplot(1,2,2)
+% plot(timeLineVector,throughputOverTime(2,:)/1e9);
+% axis([0 max(timeLineVector) 0 2.5]);
+
