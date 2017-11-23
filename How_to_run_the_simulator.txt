@@ -1,0 +1,34 @@
+
+
+
+NOTES:
+
+- The simulator requires MatLab Parallel toolbox to run.
+- This simulator requires Matlab.
+
+
+                          TO START
+
+1) SET the paramters:
+
+Before running the simulation, you need to set some parameters, namely
+
+- misbehaviour probabilities for the Licensee Operators in "mbeh_probs"
+Only set the first two values and leave the third fixed to 0.
+- number of simulation snapshots in "n_sim".
+- penalty thresholds in "penaltyThreshold". As many values as you require for your simulations.
+The more values, the more simulations the simulator will run (n_sim per penalty threshold value)
+- result file label in "saveFileLabel". The simulator will save the results in a .mat file with
+the the label you set.
+
+2) RUN the SIMULATOR
+
+To run the simulator, run function "runMultipleSiulations.m"
+
+3) SAVED RESULTS
+
+The results will be saved in the folder where you store the simulator files, with the label
+you set in the parameters.
+
+
+
