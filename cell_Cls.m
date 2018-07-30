@@ -102,7 +102,7 @@ classdef cell_Cls < handle
         function obj = cell_Cls(objType, varCellId, numOfCarriers,...
                 varMaxTxPw,arrayAvPRBs,timerQoSEV, numOfTTIperSimu)         
             
-            if nargin > 4
+            if nargin > 4   % if number of arguments in functions are >4
             
                 obj.typeIndex = objType.index;
                 obj.cellID = varCellId;
